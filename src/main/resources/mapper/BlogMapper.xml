@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.DAO.BlogMapper">
+    <select id="selectAllBlog" resultMap="detailedBlogResultMap">
+        select
+            B.bid,B.title,B.aid,B.state,
+            A.aid,A.aname,A.password,
+            P.pid,P.bid,P.aid,P.pcreate_time,P.pbody,P.draft,
+            C.cid,C.pid,C.cbody,
+            T.tid,T.pid,T.tbody
+        from Blog B
+                 left outer join Author A on B.aid = A.aid
+                 left outer join Post P on B.bid = P.bid
+                 left outer join Comment C on P.pid = C.pid
+                 left outer join Tag T on P.pid = T.pid
+    </select>
+
+    <select id="selectBlogByBid" resultType="Blog">
+        SELECT * FROM Blog WHERE aid = #{bid}
+    </select>
+
+    <resultMap id="detailedBlogResultMap" type="Blog">
+        <id property="bid" column="bid"></id>
+        <result property="title" column="title"></result>
+        <result property="aid" column="aid"></result>
+        <result property="state" column="state"
+                typeHandler="com.demo.Util.StateHandler"></result>
+        <association property="author" javaType="Author">
+            <id property="aid" column="aid"></id>
+            <result property="aname" column="aname"></result>
+            <result property="password" column="password"></result>
+        </association>
+        <collection property="posts" javaType="java.util.List" ofType="Post">
+            <result property="draft" column="draft"></result>
+            <discriminator javaType="int" column="draft">
+                <case value="1" resultType="DraftPost">
+                    <id property="pid" column="pid"></id>
+                    <result property="aid" column="aid"></result>
+                    <result property="bid" column="bid"></result>
+                    <result property="pbody" column="pbody"></result>
+                    <result property="pcreateTime" column="pcreate_time"></result>
+                    <result property="draft" column="draft"></result>
+                    <collection property="comments" javaType="java.util.List" ofType="Comment">
+                        <id property="cid" column="cid"></id>
+                        <result property="pid" column="pid"></result>
+                        <result property="cbody" column="cbody"></result>
+                    </collection>
+                    <collection property="tags" javaType="java.util.List" ofType="Tag">
+                        <id property="tid" column="tid"></id>
+                        <result property="pid" column="pid"></result>
+                        <result property="tbody" column="tbody"></result>
+                    </collection>
+                </case>
+                <case value="0" resultType="RegularPost">
+                    <id property="pid" column="pid"></id>
+                    <result property="aid" column="aid"></result>
+                    <result property="bid" column="bid"></result>
+                    <result property="pbody" column="pbody"></result>
+                    <result property="pcreateTime" column="pcreate_time"></result>
+                    <result property="draft" column="draft"></result>
+                    <collection property="comments" javaType="java.util.List" ofType="Comment">
+                        <id property="cid" column="cid"></id>
+                        <result property="pid" column="pid"></result>
+                        <result property="cbody" column="cbody"></result>
+                    </collection>
+                    <collection property="tags" javaType="java.util.List" ofType="Tag">
+                        <id property="tid" column="tid"></id>
+                        <result property="pid" column="pid"></result>
+                        <result property="tbody" column="tbody"></result>
+                    </collection>
+                </case>
+            </discriminator>
+        </collection>
+    </resultMap>
+
+    <select id="selectBlogDetails" resultMap="detailedBlogResultMap">
+        select
+            B.bid,B.title,B.aid,B.state,
+            A.aid,A.aname,A.password,
+            P.pid,P.bid,P.aid,P.pcreate_time,P.pbody,P.draft,
+            C.cid,C.pid,C.cbody,
+            T.tid,T.pid,T.tbody
+        from Blog B
+                 left outer join Author A on B.aid = A.aid
+                 left outer join Post P on B.bid = P.bid
+                 left outer join Comment C on P.pid = C.pid
+                 left outer join Tag T on P.pid = T.pid
+        where B.bid = #{id}
+    </select>
+</mapper>
